@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <div class="hexagon">
+                    <a href="index.html">
+                        <img src="Qlogo.png" alt="Quantum Logo" style="width: 50px;">
+                    </a>
+                </div>
+                <span>uantum</span>
+            </div>
+            <nav class="nav-links">
+                <a href="compiler.html">Compiler</a>
+                <a href="license.html">License</a>
+                <a href="https://github.com/seba495g/Quantum/blob/main/README.md">ReadMe.md</a>
+                <a href="help.html">Help</a>
+                <a href="download.html">Download</a>
+                <a href="credits.html">GitHub Contributor(s)</a>
+                <a href="about.html">About</a>
+            </nav>
+        </header>
+        <hr>
+        <h1>Quantum Compiler (in-dev)</h1>
+        <main class="content">
+            <textarea id="compile" placeholder="Enter your quantum code here..." rows="5" style="width: 100%;"></textarea>
+            <br>
+            <button id="compileButton">Compile</button>
+        </main>
+        <center>
+            <p id="output" style="color: rgb(20, 20, 20); font-weight: bold;"></p>
+        </center>
+        <br>
+        <footer class="footer">
+            <p>Published with <b>GitHub</b></p>
+        </footer>
+    </div>
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Get references to the button and other elements
+    const compileButton = document.getElementById('compileButton');
+    const compileTextarea = document.getElementById('compile');
+    const outputElement = document.getElementById('output');
+
+    // Function to handle compilation
+    function run() {
+        let s__ = compileTextarea.value; // Get the text from the textarea
+        let outputText = ""; // Variable to store the output text
+
+        // Check if the required import is present
+        if (!s__.includes("&gitimport quaio.qh")) {
+            outputText = "Error: Missing required import '&gitimport quaio.qh'.";
+            outputElement.innerText = outputText;
+            return;
+        }
+
+        // Handle input (`q:in >> `) and output (`q:out >> `)
+        let lines = s__.split("\n");
+        lines.forEach((line, index) => {
+            line = line.trim();
+
+            // Handle input (`q:in >>`) - Check if the line starts with 'q:in >>'
+            if (line.startsWith("q:in >>")) {
+                let inputPrompt = line.split("q:in >>")[1]?.trim(); // Get the prompt after 'q:in >>'
+
+                // Ensure there's text after 'q:in >>'
+                if (!inputPrompt) {
+                    outputText += `Error: 'q:in >>' at line ${index + 1} is missing a prompt message.\n`;
+                    return;
+                }
+
+                // Prompt the user for input
+                let userInput = prompt(inputPrompt);
+
+                if (userInput === null) {
+                    // If the user cancels the prompt, append a specific cancelation message
+                    outputText += `Input was canceled for 'q:in >> ${inputPrompt}' at line ${index + 1}.\n`;
+                } else {
+                    // Add the user input to the output
+                    outputText += `User input: ${userInput}\n`;
+                }
+            }
+
+            // Handle output (`q:out >>`) - Check if the line starts with 'q:out >>'
+            else if (line.startsWith("q:out >>")) {
+                let outputLine = line.split("q:out >>")[1]?.trim(); // Get the output text after 'q:out >>'
+
+                // Ensure there's text after 'q:out >>'
+                if (!outputLine) {
+                    outputText += `Error: 'q:out >>' at line ${index + 1} is missing output text.\n`;
+                    return;
+                }
+
+                // Add the output text to the output
+                outputText += `Output: ${outputLine}\n`;
+            }
+        });
+
+        // Update the output element
+        outputElement.innerText = outputText.trim(); // Remove extra spaces or lines
+    }
+
+    // Bind the run function to the compile button's click event
+    compileButton.addEventListener('click', run);
+});
+    </script>
+</body>
+</html>
