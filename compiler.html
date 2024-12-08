@@ -86,23 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Add the user input to the output
                     outputText += `${userInput}\n`;
                 }
-            }
-            else if (line.startsWith("webout >> ")) {
-                let webline = line.split("webout >> ")[1]?.trim();
-                open(webline)
-                if (!webline) {
-                    webline += `Error: 'webout >> ' at line ${index + 1} is missing a link.\n`;
-                    return;
-                }
-            }
-            else if (webline.includes("webout >> ")) {
-                let webline = line.split("webout >> ")[1]?.trim();
-                open(webline)
-                if (!webline) {
-                    webline += `Error: 'webout >> ' at line ${index + 1} is missing a link.\n`;
-                    return;
-                }
-            }
+            }
             // Handle output (`q:out >>`) - Check if the line starts with 'q:out >>'
             else if (line.startsWith("q:out >>")) {
                 let outputLine = line.split("q:out >>")[1]?.trim(); // Get the output text after 'q:out >>'
