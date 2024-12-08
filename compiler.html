@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     outputText += `Input was canceled for 'q:in >> ${inputPrompt}' at line ${index + 1}.\n`;
                 } else {
                     // Add the user input to the output
-                    outputText += `User input: ${userInput}\n`;
+                    outputText += `${userInput}\n`;
                 }
             }
 
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // Add the output text to the output
-                outputText += `Output: ${outputLine}\n`;
+                outputText += `${outputLine}\n`;
             }
         });
 
