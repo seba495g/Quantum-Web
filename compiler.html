@@ -87,19 +87,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     outputText += `${userInput}\n`;
                 }
             }
-            else if (line.startsWith("web ")) {
-                let webline = line.split("web ")[1]?.trim();
+            else if (line.startsWith("webout >> ")) {
+                let webline = line.split("webout >> ")[1]?.trim();
                 open(webline)
-                if (!outputLine) {
-                    outputText += `Error: 'web ' at line ${index + 1} is missing a link.\n`;
+                if (!webline) {
+                    webline += `Error: 'webout >> ' at line ${index + 1} is missing a link.\n`;
                     return;
                 }
             }
-            else if (line.includes("web ")) {
-                let webline = line.split("web ")[1]?.trim();
+            else if (webline.includes("webout >> ")) {
+                let webline = line.split("webout >> ")[1]?.trim();
                 open(webline)
-                if (!outputLine) {
-                    outputText += `Error: 'web ' at line ${index + 1} is missing a link.\n`;
+                if (!webline) {
+                    webline += `Error: 'webout >> ' at line ${index + 1} is missing a link.\n`;
                     return;
                 }
             }
