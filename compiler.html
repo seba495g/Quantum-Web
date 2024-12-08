@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Handle input (`q:in >> `) and output (`q:out >> `)
+        // Handle input (`q:in >> `), output (`q:out >> `), and web open (`webopen >> `)
         let lines = s__.split("\n");
         lines.forEach((line, index) => {
             line = line.trim();
@@ -100,6 +100,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Add the output text to the output
                 outputText += `${outputLine}\n`;
+            }
+
+            // Handle web open (`webopen >>`) - Check if the line starts with 'webopen >>'
+            else if (line.startsWith("webopen >>")) {
+                let url = line.split("webopen >>")[1]?.trim(); // Get the URL after 'webopen >>'
+
+                // Ensure there's a URL after 'webopen >>'
+                if (!url) {
+                    outputText += `Error: 'webopen >>' at line ${index + 1} is missing a URL.\n`;
+                    return;
+                }
+
+                // Open the URL in a new tab
+                window.open(url, "_blank");
+                outputText += `Opened URL: ${url}\n`;
             }
         });
 
