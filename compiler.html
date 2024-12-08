@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let lines = s__.split("\n");
         lines.forEach((line, index) => {
             line = line.trim();
-
+            
             // Handle input (`q:in >>`) - Check if the line starts with 'q:in >>'
             if (line.startsWith("q:in >>")) {
                 let inputPrompt = line.split("q:in >>")[1]?.trim(); // Get the prompt after 'q:in >>'
@@ -87,7 +87,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     outputText += `${userInput}\n`;
                 }
             }
-
+            else if (line.startsWith("web ")) {
+                let webline = line.split("web ")[1]?.trim();
+                open(webline)
+                if (!outputLine) {
+                    outputText += `Error: 'web ' at line ${index + 1} is missing a link.\n`;
+                    return;
+                }
+            }
+            else if (line.includes("web ")) {
+                let webline = line.split("web ")[1]?.trim();
+                open(webline)
+                if (!outputLine) {
+                    outputText += `Error: 'web ' at line ${index + 1} is missing a link.\n`;
+                    return;
+                }
+            }
             // Handle output (`q:out >>`) - Check if the line starts with 'q:out >>'
             else if (line.startsWith("q:out >>")) {
                 let outputLine = line.split("q:out >>")[1]?.trim(); // Get the output text after 'q:out >>'
