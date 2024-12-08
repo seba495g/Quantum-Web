@@ -30,7 +30,7 @@
         <hr>
         <h1>Quantum Compiler (in-dev)</h1>
         <main class="content">
-            <textarea id="compile" placeholder="Enter your quantum code here..." rows="5" style="width: 100%;"></textarea>
+            <textarea id="compile" placeholder="&gitport quaio.qh..." rows="5" style="width: 100%;"></textarea>
             <br>
             <button id="compileButton">Compile</button>
         </main>
@@ -86,7 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Add the user input to the output
                     outputText += `${userInput}\n`;
                 }
-            }
+            }
+
             // Handle output (`q:out >>`) - Check if the line starts with 'q:out >>'
             else if (line.startsWith("q:out >>")) {
                 let outputLine = line.split("q:out >>")[1]?.trim(); // Get the output text after 'q:out >>'
