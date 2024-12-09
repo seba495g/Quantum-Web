@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum</title>
+    <title>Quantum Compiler</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -33,6 +33,7 @@
             <textarea id="compile" placeholder="&gitport quaio.qh..." rows="5" style="width: 100%;"></textarea>
             <br>
             <button id="compileButton">Compile</button>
+            <button id="shareButton">Share Code</button>
         </main>
         <center>
             <p id="output" style="color: rgb(20, 20, 20); font-weight: bold;"></p>
@@ -44,86 +45,128 @@
     </div>
     <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Get references to the button and other elements
     const compileButton = document.getElementById('compileButton');
+    const shareButton = document.getElementById('shareButton');
     const compileTextarea = document.getElementById('compile');
     const outputElement = document.getElementById('output');
 
-    // Function to handle compilation
-    function run() {
-        let s__ = compileTextarea.value; // Get the text from the textarea
-        let outputText = ""; // Variable to store the output text
+    let variables = {};
 
-        // Check if the required import is present
-        if (!s__.includes("&gitport quaio.qh")) {
+    // Load shared code from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedCode = urlParams.get('code');
+    if (sharedCode) {
+        compileTextarea.value = decodeURIComponent(sharedCode);
+    }
+
+    function run() {
+        let code = compileTextarea.value;
+        let outputText = "";
+
+        if (!code.includes("&gitport quaio.qh")) {
             outputText = "Error: Missing required import '&gitport quaio.qh'.";
             outputElement.innerText = outputText;
             return;
         }
 
-        // Handle input (`q:in >> `), output (`q:out >> `), and web open (`webopen >> `)
-        let lines = s__.split("\n");
-        lines.forEach((line, index) => {
-            line = line.trim();
-            
-            // Handle input (`q:in >>`) - Check if the line starts with 'q:in >>'
-            if (line.startsWith("q:in >>")) {
-                let inputPrompt = line.split("q:in >>")[1]?.trim(); // Get the prompt after 'q:in >>'
+        const lines = code.split("\n");
 
-                // Ensure there's text after 'q:in >>'
-                if (!inputPrompt) {
-                    outputText += `Error: 'q:in >>' at line ${index + 1} is missing a prompt message.\n`;
-                    return;
+        for (const [index, line] of lines.entries()) {
+            const trimmedLine = line.trim();
+
+            // Variable Assignment
+            if (trimmedLine.startsWith("int ")) {
+                const match = trimmedLine.match(/int (\w+) = q:in >> (.+)/);
+                if (match) {
+                    const [, variable, promptMessage] = match;
+                    const userInput = prompt(promptMessage.trim()) || "undefined";
+                    variables[variable] = userInput;
+                    continue;
                 }
 
-                // Prompt the user for input
-                let userInput = prompt(inputPrompt);
-
-                if (userInput === null) {
-                    // If the user cancels the prompt, append a specific cancelation message
-                    outputText += `Input was canceled for 'q:in >> ${inputPrompt}' at line ${index + 1}.\n`;
+                const [_, variable, value] = trimmedLine.match(/int (\w+) = (.+)/) || [];
+                if (variable) {
+                    variables[variable] = value?.trim();
                 } else {
-                    // Add the user input to the output
+                    outputText += `Error: Invalid variable declaration at line ${index + 1}.\n`;
+                }
+                continue;
+            }
+
+            // Conditional Statements
+            if (trimmedLine.startsWith("if ")) {
+                const match = trimmedLine.match(/if (\w+) == (.+) then q:in >> (.+)/);
+                if (match) {
+                    const [, variable, expectedValue, promptMessage] = match;
+                    if (variables[variable] === expectedValue.trim()) {
+                        const userInput = prompt(promptMessage.trim()) || "undefined";
+                        outputText += `${userInput}\n`;
+                    }
+                    continue;
+                }
+
+                const conditionalOutput = trimmedLine.match(/if (\w+) == (.+) then q:out >> (.+)/);
+                if (conditionalOutput) {
+                    const [, variable, expectedValue, outputMessage] = conditionalOutput;
+                    if (variables[variable] === expectedValue.trim()) {
+                        outputText += `${outputMessage}\n`;
+                    }
+                    continue;
+                }
+
+                outputText += `Error: Invalid conditional statement at line ${index + 1}.\n`;
+                continue;
+            }
+
+            // Direct Input
+            if (trimmedLine.startsWith("q:in >>")) {
+                const promptMessage = trimmedLine.split("q:in >>")[1]?.trim();
+                if (promptMessage) {
+                    const userInput = prompt(promptMessage) || "undefined";
                     outputText += `${userInput}\n`;
+                } else {
+                    outputText += `Error: Missing prompt text for 'q:in >>' at line ${index + 1}.\n`;
                 }
+                continue;
             }
 
-            // Handle output (`q:out >>`) - Check if the line starts with 'q:out >>'
-            else if (line.startsWith("q:out >>")) {
-                let outputLine = line.split("q:out >>")[1]?.trim(); // Get the output text after 'q:out >>'
-
-                // Ensure there's text after 'q:out >>'
-                if (!outputLine) {
-                    outputText += `Error: 'q:out >>' at line ${index + 1} is missing output text.\n`;
-                    return;
+            // Output
+            if (trimmedLine.startsWith("q:out >>")) {
+                const outputMessage = trimmedLine.split("q:out >>")[1]?.trim();
+                if (outputMessage) {
+                    outputText += `${outputMessage}\n`;
+                } else {
+                    outputText += `Error: Missing text for 'q:out >>' at line ${index + 1}.\n`;
                 }
-
-                // Add the output text to the output
-                outputText += `${outputLine}\n`;
+                continue;
             }
 
-            // Handle web open (`webopen >>`) - Check if the line starts with 'webopen >>'
-            else if (line.startsWith("webopen >>")) {
-                let url = line.split("webopen >>")[1]?.trim(); // Get the URL after 'webopen >>'
-
-                // Ensure there's a URL after 'webopen >>'
-                if (!url) {
-                    outputText += `Error: 'webopen >>' at line ${index + 1} is missing a URL.\n`;
-                    return;
+            // Web Open
+            if (trimmedLine.startsWith("webopen >>")) {
+                const url = trimmedLine.split("webopen >>")[1]?.trim();
+                if (url) {
+                    window.open(url, "_blank");
+                    outputText += `Opened URL: ${url}\n`;
+                } else {
+                    outputText += `Error: Missing URL for 'webopen >>' at line ${index + 1}.\n`;
                 }
-
-                // Open the URL in a new tab
-                window.open(url, "_blank");
-                outputText += `Opened URL: ${url}\n`;
+                continue;
             }
-        });
+        }
 
-        // Update the output element
-        outputElement.innerText = outputText.trim(); // Remove extra spaces or lines
+        outputElement.innerText = outputText.trim();
     }
 
-    // Bind the run function to the compile button's click event
-    compileButton.addEventListener('click', run);
+    function shareCode() {
+        const code = encodeURIComponent(compileTextarea.value);
+        const shareURL = `${window.location.origin}${window.location.pathname}?code=${code}`;
+        navigator.clipboard.writeText(shareURL).then(() => {
+            alert("Shareable URL copied to clipboard!");
+        });
+    }
+
+    compileButton.addEventListener("click", run);
+    shareButton.addEventListener("click", shareCode);
 });
     </script>
 </body>
